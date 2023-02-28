@@ -49,6 +49,8 @@ merged_df['account_maturity'] = ((merged_df.index.get_level_values('date') - mer
 # %% --------------------------------------------------------------------------
 # # concurrent bank balance
 # # -----------------------------------------------------------------------------
+
+merged_df = merged_df.dropna(subset=['start_balance'])
 merged_df['conc_bal'] = merged_df.groupby('customer_id')['amount'].cumsum()
 merged_df['current_balance'] = merged_df['start_balance'] + merged_df['conc_bal']
 # %% --------------------------------------------------------------------------
@@ -72,6 +74,7 @@ merged_df = merged_df.drop(columns=['conc_bal'])
 # add pct change balance column
 # -----------------------------------------------------------------------------
 merged_df['balance pct change'] = merged_df['amount']/merged_df['current_balance']*100
+merged_df['balance pct change'] = merged_df['balance pct change'].fillna(0)
 # %% --------------------------------------------------------------------------
 # Fed data
 # -----------------------------------------------------------------------------
