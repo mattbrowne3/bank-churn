@@ -56,8 +56,11 @@ merged_df['current_balance'] = merged_df['start_balance'] + merged_df['conc_bal'
 # -----------------------------------------------------------------------------
 merged_df.replace(to_replace='NY', value = 'New York', inplace=True)
 merged_df.replace('TX', value='Texas', inplace=True)
+merged_df.replace('MASS', value='Massachusetts', inplace=True)
 merged_df.replace('CALIFORNIA', value='California', inplace=True)
 merged_df.drop(merged_df.loc[merged_df['state']=='-999'].index, inplace=True)
+merged_df.drop(merged_df.loc[merged_df['state']=='UNK'].index, inplace=True)
+merged_df.drop(merged_df.loc[merged_df['state']=='Australia'].index, inplace=True)
 # %% --------------------------------------------------------------------------
 # Fix balance
 # -----------------------------------------------------------------------------
