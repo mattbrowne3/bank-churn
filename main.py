@@ -73,8 +73,15 @@ merged_df = merged_df.drop(columns=['conc_bal'])
 # %% --------------------------------------------------------------------------
 # add pct change balance column
 # -----------------------------------------------------------------------------
-merged_df['balance pct change'] = merged_df['amount']/merged_df['current_balance']*100
-merged_df['balance pct change'] = merged_df['balance pct change'].fillna(0)
+# merged_df['balance pct change'] = merged_df['amount']/merged_df['current_balance']*100
+# merged_df['balance pct change'] = merged_df['balance pct change'].fillna(0)
+merged_df['balance pct change'] = 0
+for i in range(len(merged_df)):
+    if (merged_df['current_balance'].iloc[i]-merged_df['amount'].iloc[i]) == 0:
+        d = 0.01
+    else:
+        d = merged_df['current_balance'].iloc[i]-merged_df['amount'].iloc[i]
+    merged_df['balance pct change'].iloc[i] = merged_df['amount'].iloc[i]/(d)*100
 # %% --------------------------------------------------------------------------
 # Fed data
 # -----------------------------------------------------------------------------
@@ -196,6 +203,8 @@ merged_df['days_since_last_transaction'] = (merged_df.index[-1][1] - merged_df['
 # %% --------------------------------------------------------------------------
 #  Churn Column
 # -----------------------------------------------------------------------------
+threshold = 61
+
 merged_df['will_churn'] = False
 for i in range(len(merged_df.index)):
     if i != range(len(merged_df.index))[-1]:
@@ -203,8 +212,11 @@ for i in range(len(merged_df.index)):
             merged_df['will_churn'].iloc[i] = True
 
 for i in range(len(merged_df.index)):
-    if merged_df.index[i][1] == merged_df.index[-1][1]:
+    if merged_df['days_since_last_transaction'].iloc[i] < threshold:
+    #if merged_df.index[i][1] == merged_df.index[-1][1]:
         merged_df['will_churn'].iloc[i] = False
+
+
 
 
 # %% --------------------------------------------------------------------------
