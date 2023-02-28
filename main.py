@@ -155,6 +155,39 @@ sns.heatmap(merged_df.corr())
 
 
 # %% --------------------------------------------------------------------------
+# cleaning trans_df_original
+# -----------------------------------------------------------------------------
+
+schema = {'customer_id': int,  
+          'account_id': int,
+          'amount': float, 
+          'deposit': float, 
+          'withdrawal': float}
+
+trans_df_original.astype(schema)
+
+trans_df_original['date'] = pd.to_datetime(trans_df_original['date'])
+trans_df_original['transaction_date'] = pd.to_datetime(trans_df_original['transaction_date'])
+trans_df_original.drop(columns=['account_id', 'withdrawal', 'deposit', 'amount'], inplace=True)
+
+
+# %% --------------------------------------------------------------------------
+#  Creating the last_active_date column
+# -----------------------------------------------------------------------------
+last_transaction_date = trans_df_original.groupby('customer_id')['transaction_date'].last()
+
+dates_df = pd.DataFrame(last_transaction_date)
+dates_df.rename(columns={'transaction_date':'last_transaction_date'}, inplace=True)
+# %% --------------------------------------------------------------------------
+#  last_transaction_date column onto main df
+# -----------------------------------------------------------------------------
+merged_df = merged_df.join(dates_df)
+# %% --------------------------------------------------------------------------
+#  Create days since last transaction (w.r.t. final date in dataset)
+# -----------------------------------------------------------------------------
+merged_df['days_since_last_transaction'] = (merged_df.index[-1][1] - merged_df['last_transaction_date']).dt.days 
+
+# %% --------------------------------------------------------------------------
 #  Churn Column
 # -----------------------------------------------------------------------------
 merged_df['will_churn'] = False
