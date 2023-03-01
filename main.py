@@ -71,18 +71,6 @@ merged_df = merged_df.drop(merged_df[merged_df.current_balance < 0].index)
 merged_df = merged_df.drop(columns=['conc_bal'])
 
 # %% --------------------------------------------------------------------------
-# add pct change balance column
-# -----------------------------------------------------------------------------
-# merged_df['balance pct change'] = merged_df['amount']/merged_df['current_balance']*100
-# merged_df['balance pct change'] = merged_df['balance pct change'].fillna(0)
-merged_df['balance pct change'] = 0
-for i in range(len(merged_df)):
-    if (merged_df['current_balance'].iloc[i]-merged_df['amount'].iloc[i]) == 0:
-        d = 0.01
-    else:
-        d = merged_df['current_balance'].iloc[i]-merged_df['amount'].iloc[i]
-    merged_df['balance pct change'].iloc[i] = merged_df['amount'].iloc[i]/(d)*100
-# %% --------------------------------------------------------------------------
 # Fed data
 # -----------------------------------------------------------------------------
 start_date = '2006-12-31'
