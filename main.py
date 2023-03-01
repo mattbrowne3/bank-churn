@@ -52,7 +52,7 @@ merged_df['account_maturity'] = ((merged_df.index.get_level_values('date') - mer
 
 merged_df = merged_df.dropna(subset=['start_balance'])
 merged_df['conc_bal'] = merged_df.groupby('customer_id')['amount'].cumsum()
-merged_df['current_balance'] = merged_df['start_balance'] + merged_df['conc_bal']
+merged_df['current_balance'] = (merged_df['start_balance'] + merged_df['conc_bal']).round(2)
 # %% --------------------------------------------------------------------------
 # Fix states
 # -----------------------------------------------------------------------------
