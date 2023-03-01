@@ -217,7 +217,6 @@ merged_df = merged_df.join(dates_df)
 merged_df['days_since_last_active_transaction'] = (merged_df.index.get_level_values('date') - merged_df['last_active_transaction_date']).dt.days
 
 
-
 # %% --------------------------------------------------------------------------
 #  Adding previous months balance
 # -----------------------------------------------------------------------------
@@ -253,13 +252,77 @@ for i in range(len(merged_df.index)):
 
 
 # %% --------------------------------------------------------------------------
-#  Dropping columns not required
+# {1:Enter description for cell}
 # -----------------------------------------------------------------------------
-merged_df.drop(columns=['dob', 'creation_date', 'last_transaction_date', 'days_since_last_transaction', 'days_since_last_active_transaction', 'last_active_transaction_date'], inplace=True)
+
+merged_df['isCalifornia'] = False
+merged_df['isTexas'] = False
+for i in range(len(merged_df)):
+    if merged_df['state'].iloc[i] == 'California':
+        merged_df['isCalifornia'].iloc[i] = True    
+    if merged_df['state'].iloc[i] == 'Texas':
+        merged_df['isTexas'].iloc[i] = True
+merged_df.head()
+
 
 # %% --------------------------------------------------------------------------
-# 
+# Averages withdrawal 
+# -----------------------------------------------------------------------------
+transactions = pd.read_csv(r'..\Data\transactions_tm1_e.csv')
+x = transactions.groupby(['customer_id','date']).count()    # intermediate DF
+x = pd.DataFrame(x['amount']).rename(columns={'amount':'interaction_count'})
+# %% --------------------------------------------------------------------------
+# Active transactions column
+# -----------------------------------------------------------------------------
+mask  = transactions['amount'] != 0.00
+y = transactions[mask]  # intermediate dataframe
+y = y.groupby(['customer_id','date']).count() 
+y = pd.DataFrame(y['amount']).rename(columns={'amount':'active_interaction_count'})
+# %% --------------------------------------------------------------------------
+# Combined df
+# -----------------------------------------------------------------------------
+df2 = merged_df
+print(df2.head())
+df = x.join(y)
+df.fillna(0, inplace=True)
+merged_df = merged_df.join(df)
+
+# %% --------------------------------------------------------------------------
+#  Dropping columns not required
+# -----------------------------------------------------------------------------
+merged_df.drop(columns=['dob', 'creation_date', 'last_transaction_date', 'days_since_last_transaction', 'last_active_transaction_date'], inplace=True)
+
+
+# %% --------------------------------------------------------------------------
+# export unsampled df file
 # -----------------------------------------------------------------------------
 
-merged_df.to_csv(r'..\Data\training_df.csv')
-# %%
+merged_df.to_csv(r'..\Data\unsampled_df.csv')
+
+# %% --------------------------------------------------------------------------
+# sampling
+# -----------------------------------------------------------------------------
+
+maskt = merged_df['will_churn'] == True
+maskf = merged_df['will_churn'] == False
+will_churn_df = merged_df[maskt]
+wont_churn_df = merged_df[maskf]
+
+
+# %% --------------------------------------------------------------------------
+# sample df
+# -----------------------------------------------------------------------------
+
+wont_churn_sampled = wont_churn_df.sample(n=97446)
+
+# %% --------------------------------------------------------------------------
+# create new df
+# -----------------------------------------------------------------------------
+
+sampled_df = pd.concat([will_churn_df, wont_churn_sampled])
+
+# %% --------------------------------------------------------------------------
+# export sampled df
+# -----------------------------------------------------------------------------
+
+sampled_df.to_csv(r'..\Data\sampled_df.csv')
