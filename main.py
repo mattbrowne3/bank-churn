@@ -169,7 +169,7 @@ trans_df_original.astype(schema)
 
 trans_df_original['date'] = pd.to_datetime(trans_df_original['date'])
 trans_df_original['transaction_date'] = pd.to_datetime(trans_df_original['transaction_date'])
-trans_df_original.drop(columns=['account_id', 'withdrawal', 'deposit', 'amount'], inplace=True)
+trans_df_original.drop(columns=['account_id', 'withdrawal', 'deposit'], inplace=True)
 
 
 # %% --------------------------------------------------------------------------
@@ -189,9 +189,56 @@ merged_df = merged_df.join(dates_df)
 merged_df['days_since_last_transaction'] = (merged_df.index[-1][1] - merged_df['last_transaction_date']).dt.days 
 
 # %% --------------------------------------------------------------------------
+#  Creating the last_active_date column
+# -----------------------------------------------------------------------------
+
+# create a flag to indicate if there is any activity
+trans_df_original['has_activity'] = trans_df_original['amount'] != 0
+
+# calculate the last active transaction date for each account
+active_dates = trans_df_original[trans_df_original['has_activity'] == True]
+last_transaction_date = active_dates.groupby('customer_id')['transaction_date'].last()
+
+dates_df = pd.DataFrame(last_transaction_date)
+dates_df.rename(columns={'transaction_date':'last_active_transaction_date'}, inplace=True)
+
+
+
+# %% --------------------------------------------------------------------------
+#  last_transaction_date column onto main df
+# -----------------------------------------------------------------------------
+merged_df = merged_df.join(dates_df)
+
+
+
+# %% --------------------------------------------------------------------------
+#  Create days since last transaction (w.r.t. final date in dataset)
+# -----------------------------------------------------------------------------
+merged_df['days_since_last_active_transaction'] = (merged_df.index.get_level_values('date') - merged_df['last_active_transaction_date']).dt.days
+
+
+
+# %% --------------------------------------------------------------------------
+#  Adding previous months balance
+# -----------------------------------------------------------------------------
+merged_df['previous_balance'] = merged_df['current_balance'] - merged_df['amount']
+
+# %% --------------------------------------------------------------------------
+# Adding row for big withdraw
+# # -----------------------------------------------------------------------------
+merged_df['big_withdraw'] = merged_df['amount'] < -600
+
+
+# %% --------------------------------------------------------------------------
+#  Adding neg_growth column
+# -----------------------------------------------------------------------------
+merged_df['neg_growth'] = 0
+merged_df.loc[merged_df['GDP_PCH'] < 0, 'neg_growth'] = 1
+
+# %% --------------------------------------------------------------------------
 #  Churn Column
 # -----------------------------------------------------------------------------
-threshold = 61
+threshold = 64
 
 merged_df['will_churn'] = False
 for i in range(len(merged_df.index)):
@@ -205,7 +252,10 @@ for i in range(len(merged_df.index)):
         merged_df['will_churn'].iloc[i] = False
 
 
-
+# %% --------------------------------------------------------------------------
+#  Dropping columns not required
+# -----------------------------------------------------------------------------
+merged_df.drop(columns=['dob', 'creation_date', 'last_transaction_date', 'days_since_last_transaction', 'days_since_last_active_transaction', 'last_active_transaction_date'])
 
 # %% --------------------------------------------------------------------------
 # 
