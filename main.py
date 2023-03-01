@@ -19,7 +19,7 @@ rng = np.random.RandomState(123)
 # %% --------------------------------------------------------------------------
 # Transactions monthly load
 # -----------------------------------------------------------------------------
-trans_filepath = r'C:\Users\TommyMcDonagh\OneDrive - Kubrick Group\Documents\Banking Churn Project\transactions_tm1_e.csv'
+trans_filepath = r'..\Data\transactions_tm1_e.csv'
 trans_df_original = pd.read_csv(trans_filepath)
 trans_df_original['date'] = pd.to_datetime(trans_df_original['date'])
 trans_df = trans_df_original.groupby(by = ['customer_id', 'date']).sum()
@@ -27,9 +27,9 @@ trans_df.drop(['account_id', 'deposit', 'withdrawal'], axis = 'columns', inplace
 # %% --------------------------------------------------------------------------
 # Other data load
 # -----------------------------------------------------------------------------
-cust_filepath = r'C:\Users\TommyMcDonagh\OneDrive - Kubrick Group\Documents\Banking Churn Project\customers_tm1_e.csv'
+cust_filepath = r'..\Data\customers_tm1_e.csv'
 cust_df = pd.read_csv(cust_filepath, index_col='customer_id')
-file_path3 = r'C:\Users\TommyMcDonagh\OneDrive - Kubrick Group\Documents\Banking Churn Project\FEDFUNDS.csv'
+file_path3 = r'..\Data\FEDFUNDS.csv'
 fed_data = pd.read_csv(file_path3)
 # %% --------------------------------------------------------------------------
 # Join trans cust
@@ -89,7 +89,7 @@ merged_df = merged_df.join(new_fed)
 # %% --------------------------------------------------------------------------
 # add growth quarterly data
 # -----------------------------------------------------------------------------
-gdp_fpath = r'C:\Users\TommyMcDonagh\OneDrive - Kubrick Group\Documents\Banking Churn Project\GDP.csv'
+gdp_fpath = r'..\Data\GDP.csv'
 gdp = pd.read_csv(gdp_fpath)
 gdp = gdp.rename(columns={'DATE': 'date'})
 gdp['date'] = pd.to_datetime(gdp['date'])
@@ -112,7 +112,7 @@ merged_df = merged_df.join(gdp)
 # %% --------------------------------------------------------------------------
 # add growth quarterly data
 # -----------------------------------------------------------------------------
-inf_fpath = r'C:\Users\TommyMcDonagh\OneDrive - Kubrick Group\Documents\Banking Churn Project\INFLATION.csv'
+inf_fpath = r'..\Data\INFLATION.csv'
 inf = pd.read_csv(inf_fpath)
 inf = inf.rename(columns={'DATE': 'date'})
 inf['date'] = pd.to_datetime(inf['date'])
@@ -261,5 +261,5 @@ merged_df.drop(columns=['dob', 'creation_date', 'last_transaction_date', 'days_s
 # 
 # -----------------------------------------------------------------------------
 
-merged_df.to_csv(r'C:\Users\TommyMcDonagh\OneDrive - Kubrick Group\Documents\Banking Churn Project\training_df.csv')
+merged_df.to_csv(r'..\Data\training_df.csv')
 # %%
