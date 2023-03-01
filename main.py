@@ -255,7 +255,7 @@ for i in range(len(merged_df.index)):
 # %% --------------------------------------------------------------------------
 #  Dropping columns not required
 # -----------------------------------------------------------------------------
-merged_df.drop(columns=['dob', 'creation_date', 'last_transaction_date', 'days_since_last_transaction', 'days_since_last_active_transaction', 'last_active_transaction_date'])
+merged_df.drop(columns=['dob', 'creation_date', 'last_transaction_date', 'days_since_last_transaction', 'days_since_last_active_transaction', 'last_active_transaction_date'], inplace=True)
 
 # %% --------------------------------------------------------------------------
 # 
