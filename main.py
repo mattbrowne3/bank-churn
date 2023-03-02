@@ -251,25 +251,25 @@ merged_df['big_withdraw'] = merged_df['amount'] < -600
 # %% --------------------------------------------------------------------------
 #  Adding neg_growth column
 # -----------------------------------------------------------------------------
+
 merged_df['neg_growth'] = 0
 merged_df.loc[merged_df['GDP_PCH'] < 0, 'neg_growth'] = 1
 
 # %% --------------------------------------------------------------------------
-#  Churn Column
+# Churn Column
 # -----------------------------------------------------------------------------
+
 threshold = 64
 
-merged_df['will_churn'] = False
+merged_df['churned'] = False
 for i in range(len(merged_df.index)):
     if i != range(len(merged_df.index))[-1]:
         if merged_df.index[i][0] != merged_df.index[i + 1][0]:
-            merged_df['will_churn'].iloc[i] = True
+            merged_df['churned'].iloc[i] = True
 
 for i in range(len(merged_df.index)):
-    if merged_df['days_since_last_transaction'].iloc[i] < threshold:
-    #if merged_df.index[i][1] == merged_df.index[-1][1]:
-        merged_df['will_churn'].iloc[i] = False
-
+    if merged_df['days_since_last_active_transaction'].iloc[i] > threshold:
+        merged_df['churned'].iloc[i] = True
 
 # %% --------------------------------------------------------------------------
 # {1:Enter description for cell}
@@ -292,26 +292,34 @@ merged_df.drop(columns=['dob', 'creation_date', 'last_transaction_date', 'days_s
 
 
 # %% --------------------------------------------------------------------------
+# remove last month
+# -----------------------------------------------------------------------------
+
+
+filtered_merged_df= merged_df.loc[merged_df.index.get_level_values('date') <= pd.to_datetime('2020-04-30')]
+#merged_df = merged_df.drop(merged_df[merged_df.index.get_level_values(1) <= pd.to_datetime('2020-04-30')])
+
+# %% --------------------------------------------------------------------------
 # export unsampled df file
 # -----------------------------------------------------------------------------
 
-merged_df.to_csv(r'..\Data\unsampled_df.csv')
+filtered_merged_df.to_csv(r'..\Data\unsampled_df.csv')
 
 # %% --------------------------------------------------------------------------
 # sampling
 # -----------------------------------------------------------------------------
 
-maskt = merged_df['will_churn'] == True
-maskf = merged_df['will_churn'] == False
-will_churn_df = merged_df[maskt]
-wont_churn_df = merged_df[maskf]
+maskt = filtered_merged_df['churned'] == True
+maskf = filtered_merged_df['churned'] == False
+will_churn_df = filtered_merged_df[maskt]
+wont_churn_df = filtered_merged_df[maskf]
 
 
 # %% --------------------------------------------------------------------------
 # sample df
 # -----------------------------------------------------------------------------
 
-wont_churn_sampled = wont_churn_df.sample(n=97446)
+wont_churn_sampled = wont_churn_df.sample(n=102835)
 
 # %% --------------------------------------------------------------------------
 # create new df
