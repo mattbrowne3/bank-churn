@@ -35,6 +35,26 @@ fed_data = pd.read_csv(file_path3)
 # Join trans cust
 # -----------------------------------------------------------------------------
 merged_df = trans_df.join(cust_df) 
+
+
+# %% --------------------------------------------------------------------------
+# Interactions Column
+# -----------------------------------------------------------------------------
+x = trans_df_original.groupby(['customer_id','date']).count()    # intermediate DF
+x = pd.DataFrame(x['amount']).rename(columns={'amount':'interaction_count'})
+# %% --------------------------------------------------------------------------
+# Active transactions column
+# -----------------------------------------------------------------------------
+mask  = trans_df_original['amount'] != 0.00
+y = trans_df_original[mask]  # intermediate dataframe
+y = y.groupby(['customer_id','date']).count() 
+y = pd.DataFrame(y['amount']).rename(columns={'amount':'active_interaction_count'})
+
+df = x.join(y)
+df.fillna(0, inplace=True)
+
+merged_df = merged_df.join(df)
+
 # %% --------------------------------------------------------------------------
 # To datetime
 # -----------------------------------------------------------------------------
@@ -266,28 +286,6 @@ merged_df.head()
 
 
 # %% --------------------------------------------------------------------------
-# Averages withdrawal 
-# -----------------------------------------------------------------------------
-transactions = pd.read_csv(r'..\Data\transactions_tm1_e.csv')
-x = transactions.groupby(['customer_id','date']).count()    # intermediate DF
-x = pd.DataFrame(x['amount']).rename(columns={'amount':'interaction_count'})
-# %% --------------------------------------------------------------------------
-# Active transactions column
-# -----------------------------------------------------------------------------
-mask  = transactions['amount'] != 0.00
-y = transactions[mask]  # intermediate dataframe
-y = y.groupby(['customer_id','date']).count() 
-y = pd.DataFrame(y['amount']).rename(columns={'amount':'active_interaction_count'})
-# %% --------------------------------------------------------------------------
-# Combined df
-# -----------------------------------------------------------------------------
-df2 = merged_df
-print(df2.head())
-df = x.join(y)
-df.fillna(0, inplace=True)
-merged_df = merged_df.join(df)
-
-# %% --------------------------------------------------------------------------
 #  Dropping columns not required
 # -----------------------------------------------------------------------------
 merged_df.drop(columns=['dob', 'creation_date', 'last_transaction_date', 'days_since_last_transaction', 'last_active_transaction_date'], inplace=True)
@@ -326,3 +324,4 @@ sampled_df = pd.concat([will_churn_df, wont_churn_sampled])
 # -----------------------------------------------------------------------------
 
 sampled_df.to_csv(r'..\Data\sampled_df.csv')
+# %%
